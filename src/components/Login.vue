@@ -1,17 +1,32 @@
 <template lang="pug">
-  .row
-    form
-      q-field(label="Email address")
-        q-input(type="email" v-model="email")
-      q-field(label="Password")
-        q-input(type="password" v-model="password")
-      q-btn(color="primary" @click.prevent="signIn") Sign in
-      q-btn(color="negative" @click.prevent="signOut") Sign out
+  div
+    .row
+      div
+        p Logged in as: {{ currentUser }}
+    .row
+      form
+        q-field(label="Email address")
+          q-input(type="email" v-model="email")
+        q-field(label="Password")
+          q-input(type="password" v-model="password")
+        q-btn(color="primary" @click.prevent="signIn") Sign in
+        q-btn(color="negative" @click.prevent="signOut") Sign out
 </template>
 
 <script>
 import { QBtn, QField, QInput } from 'quasar'
+
 import Firebase from 'firebase'
+import { store } from '../store/store.js'
+Firebase.auth().onAuthStateChanged(function (user) {
+  if (user) {
+    store.dispatch('setUser', user)
+  }
+  else {
+    store.dispatch('setUser', null)
+  }
+})
+
 export default {
   components: {
     QBtn, QField, QInput
@@ -20,6 +35,11 @@ export default {
     return {
       email: '',
       password: ''
+    }
+  },
+  computed: {
+    currentUser () {
+      return this.$store.getters.getCurrentUser
     }
   },
   methods: {
@@ -36,7 +56,9 @@ export default {
       })
     },
     signOut () {
-
+      Firebase.auth().signOut().then(function () {
+        alert('logged out')
+      })
     }
   }
 }
